@@ -12,6 +12,8 @@
 package org.eclipse.m2e.jdt.internal;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -30,7 +32,7 @@ public class MavenClasspathContainer implements IClasspathContainer, Serializabl
 
   public MavenClasspathContainer(IPath path, IClasspathEntry[] entries) {
     this.path = path;
-    this.entries = entries;
+    this.entries = sorted(entries);
   }
 
   public String getDescription() {
@@ -49,4 +51,21 @@ public class MavenClasspathContainer implements IClasspathContainer, Serializabl
     return path;
   }
 
+  /**
+   * Returns copy of the input array, sorted by last segment of the entry's path.
+   */
+  private static IClasspathEntry[] sorted(IClasspathEntry[] entries) {
+    if(entries == null) {
+      return null;
+    }
+
+    IClasspathEntry[] sorted = new IClasspathEntry[entries.length];
+    System.arraycopy(entries, 0, sorted, 0, entries.length);
+    Arrays.sort(sorted, byLastSegment());
+    return sorted;
+  }
+
+  private static Comparator<IClasspathEntry> byLastSegment() {
+    return (e1, e2) -> String.CASE_INSENSITIVE_ORDER.compare(e1.getPath().lastSegment(), e2.getPath().lastSegment());
+  }
 }
